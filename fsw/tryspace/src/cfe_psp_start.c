@@ -53,6 +53,7 @@
 
 #include "cfe_psp.h"
 #include "cfe_psp_memory.h"
+#include "cfe_psp_timebase.h"
 
 /*
  * The preferred way to obtain the CFE tunable values at runtime is via
@@ -112,6 +113,7 @@ typedef struct
 */
 void CFE_PSP_DisplayUsage(char *Name);
 void CFE_PSP_ProcessArgumentDefaults(CFE_PSP_CommandData_t *CommandDataDefault);
+void CFE_PSP_DisplayTryspaceSplash(void);
 
 /*
 ** Global variables
@@ -234,6 +236,11 @@ void OS_Application_Startup(void)
     ** Initialize the CommandData struct
     */
     memset(&(CommandData), 0, sizeof(CFE_PSP_CommandData_t));
+
+    /*
+    ** Display the TrySpace splash screen
+    */
+    CFE_PSP_DisplayTryspaceSplash();
 
     /*
     ** Process the arguments with getopt_long(), then
@@ -370,6 +377,10 @@ void OS_Application_Startup(void)
     */
     CFE_PSP_ModuleInit();
 
+    /*
+     * Use regular sleep() here since simulith time is not yet initialized
+     * 1 second delay before proceeding
+     */
     sleep(1);
 
     /*
@@ -425,6 +436,7 @@ void OS_Application_Startup(void)
 
     /*
     ** Call cFE entry point.
+    ** Note: Simulith timebase initialization will happen later when OSAL creates timebases
     */
     CFE_PSP_MAIN_FUNCTION(reset_type, reset_subtype, 1, CFE_PSP_NONVOL_STARTUP_FILE);
 }
@@ -576,4 +588,33 @@ void CFE_PSP_ProcessArgumentDefaults(CFE_PSP_CommandData_t *CommandDataDefault)
         printf("CFE_PSP: Default CPU Name: %s\n", CFE_PSP_CPU_NAME);
         CommandDataDefault->GotCpuName = 1;
     }
+}
+
+/******************************************************************************
+**
+**  Purpose:
+**    Display the TrySpace splash screen
+**
+**  Arguments:
+**    (none)
+**
+**  Return:
+**    (none)
+*/
+void CFE_PSP_DisplayTryspaceSplash(void)
+{
+    printf( \
+    "\n" \
+    "       ████████╗██████╗ ██╗   ██╗███████╗██████╗  █████╗  ██████╗███████╗\n" \
+    "       ╚══██╔══╝██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝\n" \
+    "          ██║   ██████╔╝ ╚████╔╝ ███████╗██████╔╝███████║██║     █████╗  \n" \
+    "          ██║   ██╔══██╗  ╚██╔╝  ╚════██║██╔═══╝ ██╔══██║██║     ██╔══╝  \n" \
+    "          ██║   ██║  ██║   ██║   ███████║██║     ██║  ██║╚██████╗███████╗\n" \
+    "          ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝\n" \
+    "\n" \
+    "  ┌────────────────────────────────────────────────────────────────────────────┐\n" \
+    "  │                            TrySpace Laboratory                             │\n" \
+    "  │                      Core Flight Executive with Simulith                   │\n" \
+    "  └────────────────────────────────────────────────────────────────────────────┘\n" \
+    "\n");
 }

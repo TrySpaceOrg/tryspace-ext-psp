@@ -46,6 +46,7 @@ S
 #include "cfe_psp_config.h"
 #include "cfe_psp_exceptionstorage_types.h"
 #include "cfe_psp_exceptionstorage_api.h"
+#include "cfe_psp_timebase.h"
 
 #include <execinfo.h>
 #include <signal.h>
@@ -87,13 +88,8 @@ void CFE_PSP_ExceptionSigHandler(int signo, siginfo_t *si, void *ctxt)
     Buffer = CFE_PSP_Exception_GetNextContextBuffer();
     if (Buffer != NULL)
     {
-        /*
-         * read the clock as a timestamp - note "clock_gettime" is signal safe per POSIX,
-         *
-         * _not_ going through OSAL to read this as it may do something signal-unsafe...
-         * (current implementation would be safe, but it is not guaranteed to always be).
-         */
-        clock_gettime(CLOCK_MONOTONIC, &Buffer->context_info.event_time);
+        CFE_PSP_GetSimulithTimespec(&Buffer->context_info.event_time);
+        
         memcpy(&Buffer->context_info.si, si, sizeof(Buffer->context_info.si));
         NumAddrs             = backtrace(Buffer->context_info.bt_addrs, CFE_PSP_MAX_EXCEPTION_BACKTRACE_SIZE);
         Buffer->context_size = offsetof(CFE_PSP_Exception_ContextDataEntry_t, bt_addrs[NumAddrs]);
