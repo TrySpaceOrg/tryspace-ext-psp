@@ -70,7 +70,7 @@ static uint64_t previous_tick_time_ns = 0;
 static pthread_mutex_t tick_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t tick_condition = PTHREAD_COND_INITIALIZER;
 static pthread_t tick_distribution_thread;
-volatile bool tick_thread_running = false;
+bool tick_thread_running = false;
 volatile uint64_t tick_generation = 0;
 
 void timebase_simulith_clock_Init(uint32 PspModuleId)
@@ -121,7 +121,7 @@ void CFE_PSP_ShutdownSimulithTime(void)
 
         // Stop the tick distribution thread and clean up
         tick_thread_running = false;
-        pthread_cancel(tick_distribution_thread);
+        pthread_cond_broadcast(&tick_condition); // Wake the thread if waiting
         pthread_join(tick_distribution_thread, NULL);
         pthread_cond_destroy(&tick_condition);
         pthread_mutex_destroy(&tick_mutex);
@@ -176,7 +176,7 @@ void* CFE_PSP_SimulithTickDistributionThread(void* arg)
         else
         {
             printf("simulith_client_wait_for_tick() failed\n");
-            usleep(1000);
+            sched_yield();
         }
     }
     return NULL;
