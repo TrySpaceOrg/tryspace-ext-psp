@@ -371,6 +371,18 @@ void OS_Application_Startup(void)
     }
 
     /*
+    ** Set up the virtual FS mapping for the "/d" directory
+    ** On this platform it is just a local/relative dir of the same name.
+    */
+    Status = OS_FileSysAddFixedMap(&fs_id, "./d", "/d");
+    if (Status != OS_SUCCESS)
+    {
+        /* Print for informational purposes --
+         * startup can continue, but loads may fail later, depending on config. */
+        OS_printf("CFE_PSP: OS_FileSysAddFixedMap() failure: %d\n", (int)Status);
+    }
+
+    /*
     ** Initialize the statically linked modules (if any)
     ** This is only applicable to CMake build - classic build
     ** does not have the logic to selectively include/exclude modules
